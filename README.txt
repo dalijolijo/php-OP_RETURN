@@ -20,7 +20,7 @@ If you just installed Bitcore, wait for it to download and verify old blocks.
 If using as a library, include/require 'OP_RETURN.php' in your PHP script file.
 
 
-TO SEND A BITCOIN TRANSACTION WITH SOME OP_RETURN METADATA
+TO SEND A BITCORE TRANSACTION WITH SOME OP_RETURN METADATA
 ----------------------------------------------------------
 
 On the command line:

@@ -26,16 +26,16 @@
  * THE SOFTWARE.
  */
 
-	define('OP_RETURN_BITCOIN_IP', '127.0.0.1'); // IP address of your bitcore node
-	define('OP_RETURN_BITCOIN_USE_CMD', false); // use command-line instead of JSON-RPC?
+	define('OP_RETURN_BITCORE_IP', '127.0.0.1'); // IP address of your bitcore node
+	define('OP_RETURN_BITCORE_USE_CMD', false); // use command-line instead of JSON-RPC?
 	
-	if (OP_RETURN_BITCOIN_USE_CMD) {
-		define('OP_RETURN_BITCOIN_PATH', '/usr/bin/bitcore-cli'); // path to bitcore-cli executable on this server
+	if (OP_RETURN_BITCORE_USE_CMD) {
+		define('OP_RETURN_BITCORE_PATH', '/usr/bin/bitcore-cli'); // path to bitcore-cli executable on this server
 
 	} else {
-		define('OP_RETURN_BITCOIN_PORT', ''); // leave empty to use default port for mainnet/testnet
-		define('OP_RETURN_BITCOIN_USER', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
-		define('OP_RETURN_BITCOIN_PASSWORD', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
+		define('OP_RETURN_BITCORE_PORT', ''); // leave empty to use default port for mainnet/testnet
+		define('OP_RETURN_BITCORE_USER', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
+		define('OP_RETURN_BITCORE_PASSWORD', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
 	}
 	
 	define('OP_RETURN_BTX_FEE', 0.0001); // BTX fee to pay per transaction
@@ -56,7 +56,7 @@
 	//	Validate some parameters
 		
 		if (!OP_RETURN_bitcore_check($testnet))
-			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCORE_* constants are set correctly');
 
 		$result=OP_RETURN_bitcore_cmd('validateaddress', $testnet, $send_address);
 		if (!$result['isvalid'])
@@ -113,7 +113,7 @@
 	//	Validate parameters and get change address
 	
 		if (!OP_RETURN_bitcore_check($testnet))
-			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCORE_* constants are set correctly');
 			
 		$data_len=strlen($data);
 		if ($data_len==0)
@@ -197,7 +197,7 @@
 	//	Validate parameters and get status of Bitcore
 	
 		if (!OP_RETURN_bitcore_check($testnet))
-			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCORE_* constants are set correctly');
 			
 		$max_height=OP_RETURN_bitcore_cmd('getblockcount', $testnet);
 		$heights=OP_RETURN_get_ref_heights($ref, $max_height);
@@ -461,8 +461,8 @@
 		array_shift($args);
 		array_shift($args);
 	
-		if (OP_RETURN_BITCOIN_USE_CMD) {
-			$command=OP_RETURN_BITCOIN_PATH.' '.($testnet ? '-testnet ' : '').escapeshellarg($command);
+		if (OP_RETURN_BITCORE_USE_CMD) {
+			$command=OP_RETURN_BITCORE_PATH.' '.($testnet ? '-testnet ' : '').escapeshellarg($command);
 		
 			foreach ($args as $arg)
 				$command.=' '.escapeshellarg(is_array($arg) ? json_encode($arg) : $arg);
@@ -480,9 +480,9 @@
 				'params' => $args,
 			);
 			
-			$port=OP_RETURN_BITCOIN_PORT;
-			$user=OP_RETURN_BITCOIN_USER;
-			$password=OP_RETURN_BITCOIN_PASSWORD;
+			$port=OP_RETURN_BITCORE_PORT;
+			$user=OP_RETURN_BITCORE_USER;
+			$password=OP_RETURN_BITCORE_PASSWORD;
 			
 			if (
 				function_exists('posix_getpwuid') &&
@@ -510,7 +510,7 @@
 			if (!strlen($user) && strlen($password))
 				return null; // no point trying in this case
 			
-			$curl=curl_init('http://'.OP_RETURN_BITCOIN_IP.':'.$port.'/');
+			$curl=curl_init('http://'.OP_RETURN_BITCORE_IP.':'.$port.'/');
 			curl_setopt($curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 			curl_setopt($curl, CURLOPT_USERPWD, $user.':'.$password);
 			curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, OP_RETURN_NET_TIMEOUT_CONNECT);
