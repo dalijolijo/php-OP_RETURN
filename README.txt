@@ -1,6 +1,6 @@
 php-OP_RETURN v2
 ================
-Simple PHP commands and libraries for using OP_RETURNs in bitcoin transactions.
+Simple PHP commands and libraries for using OP_RETURNs in bitcore transactions.
 
 Copyright (c) Coin Sciences Ltd - http://coinsecrets.org/
 
@@ -10,13 +10,13 @@ MIT License (see headers in files)
 REQUIREMENTS
 ------------
 * PHP 5.x or later
-* Bitcoin Core 0.9 or later
+* Bitcore 0.9 or later
 
 
 BEFORE YOU START
 ----------------
 Check the constant settings at the top of OP_RETURN.php.
-If you just installed Bitcoin Core, wait for it to download and verify old blocks.
+If you just installed Bitcore, wait for it to download and verify old blocks.
 If using as a library, include/require 'OP_RETURN.php' in your PHP script file.
 
 
@@ -27,11 +27,11 @@ On the command line:
 
 * php send-OP_RETURN.php <send-address> <send-amount> <metadata> <testnet (optional)>
 
-  <send-address> is the bitcoin address of the recipient
-  <send-amount> is the amount to send (in units of BTC)
+  <send-address> is the bitcore address of the recipient
+  <send-amount> is the amount to send (in units of BTX)
   <metadata> is a hex string or raw string containing the OP_RETURN metadata
              (auto-detection: treated as a hex string if it is a valid one)
-  <testnet> should be 1 to use the bitcoin testnet, otherwise it can be omitted
+  <testnet> should be 1 to use the bitcore testnet, otherwise it can be omitted
 
 * Outputs an error if one occurred or the txid if sending was successful
 
@@ -48,10 +48,10 @@ As a library:
 
 * OP_RETURN_send($send_address, $send_amount, $metadata, $testnet=false)
 
-  $send_address is the bitcoin address of the recipient
-  $send_amount is the amount to send (in units of BTC)
+  $send_address is the bitcore address of the recipient
+  $send_amount is the amount to send (in units of BTX)
   $metadata is a string of raw bytes containing the OP_RETURN metadata
-  $testnet is whether to use the bitcoin testnet network (false if omitted)
+  $testnet is whether to use the bitcore testnet network (false if omitted)
 
 * Returns: array('error' => '[some error string]')
        or: array('txid' => '[sent txid]')
@@ -72,7 +72,7 @@ On the command line:
 
   <data> is a hex string or raw string containing the data to be stored
          (auto-detection: treated as a hex string if it is a valid one)
-  <testnet> should be 1 to use the bitcoin testnet, otherwise it can be omitted
+  <testnet> should be 1 to use the bitcore testnet, otherwise it can be omitted
 
 * Outputs an error if one occurred or if successful, the txids that were used to store
   the data and a short reference that can be used to retrieve it using this library.
@@ -90,7 +90,7 @@ As a library:
 * OP_RETURN_store($data, $testnet=false)
 
   $data is the string of raw bytes to be stored
-  $testnet is whether to use the bitcoin testnet network (false if omitted)
+  $testnet is whether to use the bitcore testnet network (false if omitted)
   
 * Returns: array('error' => '[some error string]')
        or: array('txids' => array('[1st txid]', '[2nd txid]', ...),
@@ -111,7 +111,7 @@ On the command line:
 * php retrieve-OP_RETURN.php <ref> <testnet (optional)>
 
   <ref> is the reference that was returned by a previous storage operation
-  <testnet> should be 1 to use the bitcoin testnet, otherwise it can be omitted
+  <testnet> should be 1 to use the bitcore testnet, otherwise it can be omitted
   
 * Outputs an error if one occurred or if successful, the retrieved data in hexadecimal
   and ASCII format, a list of the txids used to store the data, a list of the blocks in
@@ -130,7 +130,7 @@ As a library:
 
   $ref is the reference that was returned by a previous storage operation
   $max_results is the maximum number of results to retrieve (in general, omit for 1)
-  $testnet is whether to use the bitcoin testnet network (false if omitted)
+  $testnet is whether to use the bitcore testnet network (false if omitted)
 
 * Returns: array('error' => '[some error string]')
        or: array('data' => '[raw binary data]',
@@ -152,14 +152,14 @@ As a library:
 VERSION HISTORY
 ---------------
 v2.0.2 - 27 June 2015
-* Use Bitcoin Core getblock API to get raw block content instead of wire protocol
+* Use Bitcore getblock API to get raw block content instead of wire protocol
 
 v2.0.1 - 14 May 2015
 * More efficient checking of mempool for the first transaction in the chain
 
 v2.0 - 12 May 2015
 * Added functions for general storage and retrieval of data in the blockchain
-* Now uses Bitcoin Core JSON-RPC API (bitcoin-cli still an option), so supports Windows
+* Now uses Bitcore JSON-RPC API (bitcore-cli still an option), so supports Windows
 
 v1.0.2 - 9 December 2014
 * Now really fixed that issue (fixed typo in the fix!)

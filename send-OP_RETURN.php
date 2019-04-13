@@ -3,7 +3,7 @@
 /*
  * send-OP_RETURN.php
  * 
- * CLI wrapper for OP_RETURN.php to send bitcoin with OP_RETURN metadata
+ * CLI wrapper for OP_RETURN.php to send bitcore with OP_RETURN metadata
  *
  * Copyright (c) Coin Sciences Ltd
  * 

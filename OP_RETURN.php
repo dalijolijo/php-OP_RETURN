@@ -3,7 +3,7 @@
 /*
  * OP_RETURN.php
  *
- * PHP script to generate and retrieve OP_RETURN bitcoin transactions
+ * PHP script to generate and retrieve OP_RETURN bitcore transactions
  *
  * Copyright (c) Coin Sciences Ltd
  *
@@ -26,26 +26,26 @@
  * THE SOFTWARE.
  */
 
-	define('OP_RETURN_BITCOIN_IP', '127.0.0.1'); // IP address of your bitcoin node
+	define('OP_RETURN_BITCOIN_IP', '127.0.0.1'); // IP address of your bitcore node
 	define('OP_RETURN_BITCOIN_USE_CMD', false); // use command-line instead of JSON-RPC?
 	
 	if (OP_RETURN_BITCOIN_USE_CMD) {
-		define('OP_RETURN_BITCOIN_PATH', '/usr/bin/bitcoin-cli'); // path to bitcoin-cli executable on this server
+		define('OP_RETURN_BITCOIN_PATH', '/usr/bin/bitcore-cli'); // path to bitcore-cli executable on this server
 
 	} else {
 		define('OP_RETURN_BITCOIN_PORT', ''); // leave empty to use default port for mainnet/testnet
-		define('OP_RETURN_BITCOIN_USER', ''); // leave empty to read from ~/.bitcoin/bitcoin.conf (Unix only)
-		define('OP_RETURN_BITCOIN_PASSWORD', ''); // leave empty to read from ~/.bitcoin/bitcoin.conf (Unix only)
+		define('OP_RETURN_BITCOIN_USER', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
+		define('OP_RETURN_BITCOIN_PASSWORD', ''); // leave empty to read from ~/.bitcore/bitcore.conf (Unix only)
 	}
 	
-	define('OP_RETURN_BTC_FEE', 0.0001); // BTC fee to pay per transaction
-	define('OP_RETURN_BTC_DUST', 0.00001); // omit BTC outputs smaller than this
+	define('OP_RETURN_BTX_FEE', 0.0001); // BTX fee to pay per transaction
+	define('OP_RETURN_BTX_DUST', 0.00001); // omit BTX outputs smaller than this
 
 	define('OP_RETURN_MAX_BYTES', 80); // maximum bytes in an OP_RETURN (80 as of Bitcoin 0.11)
 	define('OP_RETURN_MAX_BLOCKS', 10); // maximum number of blocks to try when retrieving data
 
-	define('OP_RETURN_NET_TIMEOUT_CONNECT', 5); // how long to time out when connecting to bitcoin node
-	define('OP_RETURN_NET_TIMEOUT_RECEIVE', 10); // how long to time out retrieving data from bitcoin node
+	define('OP_RETURN_NET_TIMEOUT_CONNECT', 5); // how long to time out when connecting to bitcore node
+	define('OP_RETURN_NET_TIMEOUT_RECEIVE', 10); // how long to time out retrieving data from bitcore node
 	
 
 //	User-facing functions
@@ -55,10 +55,10 @@
 		
 	//	Validate some parameters
 		
-		if (!OP_RETURN_bitcoin_check($testnet))
-			return array('error' => 'Please check Bitcoin Core is running and OP_RETURN_BITCOIN_* constants are set correctly');
+		if (!OP_RETURN_bitcore_check($testnet))
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
 
-		$result=OP_RETURN_bitcoin_cmd('validateaddress', $testnet, $send_address);
+		$result=OP_RETURN_bitcore_cmd('validateaddress', $testnet, $send_address);
 		if (!$result['isvalid'])
 			return array('error' => 'Send address could not be validated: '.$send_address);
 			
@@ -73,7 +73,7 @@
 		
 	//	Calculate amounts and choose inputs
 	
-		$output_amount=$send_amount+OP_RETURN_BTC_FEE;		
+		$output_amount=$send_amount+OP_RETURN_BTX_FEE;		
 
 		$inputs_spend=OP_RETURN_select_inputs($output_amount, $testnet);
 		
@@ -85,11 +85,11 @@
 
 	//	Build the raw transaction
 			
-		$change_address=OP_RETURN_bitcoin_cmd('getrawchangeaddress', $testnet);
+		$change_address=OP_RETURN_bitcore_cmd('getrawchangeaddress', $testnet);
 		
 		$outputs=array($send_address => (float)$send_amount);
 		
-		if ($change_amount>=OP_RETURN_BTC_DUST)
+		if ($change_amount>=OP_RETURN_BTX_DUST)
 			$outputs[$change_address]=$change_amount;
 
 		$raw_txn=OP_RETURN_create_txn($inputs_spend['inputs'], $outputs, $metadata, count($outputs), $testnet);
@@ -112,19 +112,19 @@
 	
 	//	Validate parameters and get change address
 	
-		if (!OP_RETURN_bitcoin_check($testnet))
-			return array('error' => 'Please check Bitcoin Core is running and OP_RETURN_BITCOIN_* constants are set correctly');
+		if (!OP_RETURN_bitcore_check($testnet))
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
 			
 		$data_len=strlen($data);
 		if ($data_len==0)
 			return array('error' => 'Some data is required to be stored');
 
-		$change_address=OP_RETURN_bitcoin_cmd('getrawchangeaddress', $testnet);
+		$change_address=OP_RETURN_bitcore_cmd('getrawchangeaddress', $testnet);
 			
 	
 	//	Calculate amounts and choose first inputs to use
 	
-		$output_amount=OP_RETURN_BTC_FEE*ceil($data_len/OP_RETURN_MAX_BYTES); // number of transactions required
+		$output_amount=OP_RETURN_BTX_FEE*ceil($data_len/OP_RETURN_MAX_BYTES); // number of transactions required
 		
 		$inputs_spend=OP_RETURN_select_inputs($output_amount, $testnet);
 		if (isset($inputs_spend['error']))
@@ -136,8 +136,8 @@
 	
 	//	Find the current blockchain height and mempool txids
 	
-		$height=OP_RETURN_bitcoin_cmd('getblockcount', $testnet);
-		$avoid_txids=OP_RETURN_bitcoin_cmd('getrawmempool', $testnet);
+		$height=OP_RETURN_bitcore_cmd('getblockcount', $testnet);
+		$avoid_txids=OP_RETURN_bitcore_cmd('getrawmempool', $testnet);
 
 	
 	//	Loop to build and send transactions
@@ -149,13 +149,13 @@
 		//	Some preparation for this iteration
 		
 			$last_txn=(($data_ptr+OP_RETURN_MAX_BYTES)>=$data_len); // is this the last tx in the chain?
-			$change_amount=$input_amount-OP_RETURN_BTC_FEE;
+			$change_amount=$input_amount-OP_RETURN_BTX_FEE;
 			$metadata=substr($data, $data_ptr, OP_RETURN_MAX_BYTES);
 				
 		//	Build and send this transaction
 		
 			$outputs=array();
-			if ($change_amount>=OP_RETURN_BTC_DUST) // might be skipped for last transaction
+			if ($change_amount>=OP_RETURN_BTX_DUST) // might be skipped for last transaction
 				$outputs[$change_address]=$change_amount;
 				
 			$raw_txn=OP_RETURN_create_txn($inputs, $outputs, $metadata, $last_txn ? count($outputs) : 0, $testnet);
@@ -194,12 +194,12 @@
 	function OP_RETURN_retrieve($ref, $max_results=1, $testnet=false)
 	{
 	
-	//	Validate parameters and get status of Bitcoin Core
+	//	Validate parameters and get status of Bitcore
 	
-		if (!OP_RETURN_bitcoin_check($testnet))
-			return array('error' => 'Please check Bitcoin Core is running and OP_RETURN_BITCOIN_* constants are set correctly');
+		if (!OP_RETURN_bitcore_check($testnet))
+			return array('error' => 'Please check Bitcore is running and OP_RETURN_BITCOIN_* constants are set correctly');
 			
-		$max_height=OP_RETURN_bitcoin_cmd('getblockcount', $testnet);
+		$max_height=OP_RETURN_bitcore_cmd('getblockcount', $testnet);
 		$heights=OP_RETURN_get_ref_heights($ref, $max_height);
 		
 		if (!is_array($heights))
@@ -320,13 +320,13 @@
 	
 	//	List and sort unspent inputs by priority
 	
-		$unspent_inputs=OP_RETURN_bitcoin_cmd('listunspent', $testnet, 0);		
+		$unspent_inputs=OP_RETURN_bitcore_cmd('listunspent', $testnet, 0);		
 		if (!is_array($unspent_inputs))
 			return array('error' => 'Could not retrieve list of unspent inputs');
 		
 		foreach ($unspent_inputs as $index => $unspent_input)
 			$unspent_inputs[$index]['priority']=$unspent_input['amount']*$unspent_input['confirmations'];
-				// see: https://en.bitcoin.it/wiki/Transaction_fees
+				// see: https://en.bitcore.it/wiki/Transaction_fees
 
 		OP_RETURN_sort_by($unspent_inputs, 'priority');
 		$unspent_inputs=array_reverse($unspent_inputs); // now in descending order of priority
@@ -357,14 +357,14 @@
 	
 	function OP_RETURN_create_txn($inputs, $outputs, $metadata, $metadata_pos, $testnet)
 	{
-		$raw_txn=OP_RETURN_bitcoin_cmd('createrawtransaction', $testnet, $inputs, $outputs);
+		$raw_txn=OP_RETURN_bitcore_cmd('createrawtransaction', $testnet, $inputs, $outputs);
 
 		$txn_unpacked=OP_RETURN_unpack_txn(pack('H*', $raw_txn));
 		
 		$metadata_len=strlen($metadata);
 		
 		if ($metadata_len<=75)
-			$payload=chr($metadata_len).$metadata; // length byte + data (https://en.bitcoin.it/wiki/Script)
+			$payload=chr($metadata_len).$metadata; // length byte + data (https://en.bitcore.it/wiki/Script)
 		elseif ($metadata_len<=256)
 			$payload="\x4c".chr($metadata_len).$metadata; // OP_PUSHDATA1 format
 		else
@@ -382,11 +382,11 @@
 	
 	function OP_RETURN_sign_send_txn($raw_txn, $testnet)
 	{
-		$signed_txn=OP_RETURN_bitcoin_cmd('signrawtransaction', $testnet, $raw_txn);
+		$signed_txn=OP_RETURN_bitcore_cmd('signrawtransaction', $testnet, $raw_txn);
 		if (!$signed_txn['complete'])
 			return array('error' => 'Could not sign the transaction');
 			
-		$send_txid=OP_RETURN_bitcoin_cmd('sendrawtransaction', $testnet, $signed_txn['hex']);
+		$send_txid=OP_RETURN_bitcore_cmd('sendrawtransaction', $testnet, $signed_txn['hex']);
 		if (strlen($send_txid)!=64)
 			return array('error' => 'Could not send the transaction');
 		
@@ -403,12 +403,12 @@
 	
 	function OP_RETURN_list_mempool_txns($testnet)
 	{
-		return OP_RETURN_bitcoin_cmd('getrawmempool', $testnet);
+		return OP_RETURN_bitcore_cmd('getrawmempool', $testnet);
 	}
 	
 	function OP_RETURN_get_mempool_txn($txid, $testnet)
 	{
-		$raw_txn=OP_RETURN_bitcoin_cmd('getrawtransaction', $testnet, $txid);
+		$raw_txn=OP_RETURN_bitcore_cmd('getrawtransaction', $testnet, $txid);
 		return OP_RETURN_unpack_txn(pack('H*', $raw_txn));
 	}
 	
@@ -425,12 +425,12 @@
 
 	function OP_RETURN_get_raw_block($height, $testnet)
 	{
-		$block_hash=OP_RETURN_bitcoin_cmd('getblockhash', $testnet, $height);
+		$block_hash=OP_RETURN_bitcore_cmd('getblockhash', $testnet, $height);
 		if (strlen($block_hash)!=64)
 			return array('error' => 'Block at height '.$height.' not found');
 		
 		return array(
-			'block' => pack('H*', OP_RETURN_bitcoin_cmd('getblock', $testnet, $block_hash, false))
+			'block' => pack('H*', OP_RETURN_bitcore_cmd('getblock', $testnet, $block_hash, false))
 		);
 	}
 	
@@ -446,16 +446,16 @@
 	}
 	
 	
-//	Talking to bitcoin-cli
+//	Talking to bitcore-cli
 
-	function OP_RETURN_bitcoin_check($testnet)
+	function OP_RETURN_bitcore_check($testnet)
 	{
-		$info=OP_RETURN_bitcoin_cmd('getinfo', $testnet);
+		$info=OP_RETURN_bitcore_cmd('getinfo', $testnet);
 		
 		return is_array($info);
 	}
 	
-	function OP_RETURN_bitcoin_cmd($command, $testnet) // more params are read from here
+	function OP_RETURN_bitcore_cmd($command, $testnet) // more params are read from here
 	{
 		$args=func_get_args();
 		array_shift($args);
@@ -489,8 +489,8 @@
 				!(strlen($port) && strlen($user) && strlen($password))
 			) {
 				$posix_userinfo=posix_getpwuid(posix_getuid());
-				$bitcoin_conf=file_get_contents($posix_userinfo['dir'].'/.bitcoin/bitcoin.conf');
-				$conf_lines=preg_split('/[\n\r]/', $bitcoin_conf);
+				$bitcore_conf=file_get_contents($posix_userinfo['dir'].'/.bitcore/bitcore.conf');
+				$conf_lines=preg_split('/[\n\r]/', $bitcore_conf);
 
 				foreach ($conf_lines as $conf_line) {
 					$parts=explode('=', trim($conf_line), 2);
@@ -659,7 +659,7 @@
 	}
 	
 
-//	Unpacking and packing bitcoin blocks and transactions	
+//	Unpacking and packing bitcore blocks and transactions	
 	
 	function OP_RETURN_unpack_block($binary)
 	{
@@ -701,7 +701,7 @@
 	
 	function OP_RETURN_unpack_txn_buffer($buffer)
 	{
-		// see: https://en.bitcoin.it/wiki/Transactions
+		// see: https://en.bitcore.it/wiki/Transactions
 		
 		$txn=array();
 		
@@ -829,7 +829,7 @@
 	}
 	
 
-//	Helper class for unpacking bitcoin binary data
+//	Helper class for unpacking bitcore binary data
 
 	class OP_RETURN_buffer
 	{
